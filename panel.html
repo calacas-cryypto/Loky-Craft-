@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loky-Craft-Panel</title>
+<style>
+  :root { --bg: #111827; --card: #1F2937; --text: #FFFFFF; --primary: #10B981; --sub: #9CA3AF; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+  body { background: var(--bg); color: var(--text); padding: 20px; }
+  .login { max-width: 400px; margin: 50px auto; background: var(--card); padding: 30px; border-radius: 16px; text-align: center; }
+  .login h1 { color: var(--primary); margin-bottom: 10px; }
+  .login p { color: var(--sub); margin-bottom: 20px; }
+  input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: var(--bg); border: 1px solid var(--sub); color: var(--text); border-radius: 8px; }
+  button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 10px 0; }
+  .panel { display: none; max-width: 800px; margin: 0 auto; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .add-btn { width: auto; padding: 10px 20px; font-size: 24px; }
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
+  .modal.active { display: flex; }
+  .modal-content { background: var(--card); width: 90%; max-width: 500px; padding: 20px; border-radius: 16px; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 20px; margin-bottom: 15px; }
+  label { display: block; margin-top: 12px; font-size: 14px; color: var(--sub); }
+  .mod-list { margin-top: 20px; }
+  .mod-item { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .delete-btn { background: #EF4444; width: auto; padding: 8px 12px; }
+  .export { background: #3B82F6; }
+</style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div class="login" id="login">
+    <div style="font-size: 40px;">🎮</div>
+    <h1>Loky-Craft-Panel</h1>
+    <p>Panel de Administración</p>
+    <input type="password" id="pass" placeholder="Contraseña">
+    <button onclick="login()">Entrar</button>
+  </div>
+
+  <!-- PANEL -->
+  <div class="panel" id="panel">
+    <div class="header">
+      <h2>Mis Mods</h2>
+      <button class="add-btn" onclick="abrirModal()">+</button>
+    </div>
+    <div class="mod-list" id="modList"></div>
+    <button class="export" onclick="exportarJSON()">📥 Exportar mods.json para GitHub</button>
+    <p style="font-size: 12px; color: var(--sub); margin-top: 10px;">1. Exporta el archivo<br>2. Súbelo a tu GitHub<br>3. Tu app se actualiza sola</p>
+  </div>
+
+  <!-- MODAL AGREGAR -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div class="modal-title">Agregar Nuevo Mod</div>
+      <label>Nombre del mod</label>
+      <input type="text" id="nombre" placeholder="Essentials Update V1.6">
+      
+      <label>Selecciona categoría</label>
+      <select id="categoria">
+        <option>ADDONS</option>
+        <option>MAPAS</option>
+        <option>SHADERS</option>
+        <option>TEXTURAS</option>
+        <option>DLC</option>
+        <option>SKINS</option>
+        <option>VERSIONES</option>
+      </select>
+      
+      <label>Versión</label>
+      <input type="text" id="version" placeholder="V1.6">
+      
+      <label>Descripción</label>
+      <textarea id="desc" rows="3" placeholder="Trae nuevos items útiles y crafteos..."></textarea>
+      
+      <label>Link de descarga</label>
+      <input type="text" id="link" placeholder="https://mediafire.com/...">
+      
+      <label>URL de imagen</label>
+      <input type="text" id="imagen" placeholder="https://i.imgur.com/ejemplo.png">
+      
+      <button onclick="guardarMod()">Guardar Mod</button>
+      <button style="background: var(--sub);" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+
+<script>
+  const PASSWORD = "loky123"; // CAMBIA ESTA CONTRASEÑA
+  let mods = JSON.parse(localStorage.getItem('lokyMods')) || [];
+
+  function login() {
+    if(document.getElementById('pass').value === PASSWORD) {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('panel').style.display = 'block';
+      renderMods();
+    } else {
+      alert('Contraseña incorrecta');
+    }
+  }
+
+  function abrirModal() {
+    document.getElementById('modal').classList.add('active');
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal').classList.remove('active');
+    limpiarCampos();
+  }
+
+  function limpiarCampos() {
+    document.getElementById('nombre').value = '';
+    document.getElementById('version').value = '';
+    document.getElementById('desc').value = '';
+    document.getElementById('link').value = '';
+    document.getElementById('imagen').value = '';
+  }
+
+  function guardarMod() {
+    const mod = {
+      id: Date.now(),
+      nombre: document.getElementById('nombre').value,
+      categoria: document.getElementById('categoria').value,
+      version: document.getElementById('version').value,
+      desc: document.getElementById('desc').value,
+      link: document.getElementById('link').value,
+      imagen: document.getElementById('imagen').value
+    };
+    mods.push(mod);
+    localStorage.setItem('lokyMods', JSON.stringify(mods));
+    renderMods();
+    cerrarModal();
+  }
+
+  function renderMods() {
+    const lista = document.getElementById('modList');
+    lista.innerHTML = '';
+    mods.forEach(mod => {
+      lista.innerHTML += `
+        <div class="mod-item">
+          <div>
+            <strong>${mod.nombre}</strong><br>
+            <small>${mod.categoria} - ${mod.version}</small>
+          </div>
+          <button class="delete-btn" onclick="borrarMod(${mod.id})">Borrar</button>
+        </div>
+      `;
+    });
+  }
+
+  function borrarMod(id) {
+    mods = mods.filter(m => m.id !== id);
+    localStorage.setItem('lokyMods', JSON.stringify(mods));
+    renderMods();
+  }
+
+  function exportarJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(mods, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "mods.json");
+    downloadAnchor.click();
+  }
+</script>
+</body>
+</html>

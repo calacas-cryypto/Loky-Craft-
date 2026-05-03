@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loky-Craft</title>
+<style>
+  :root {
+    --bg: #FFFFFF; --card: #F3F4F6; --text: #111827; --primary: #10B981; --sub: #6B7280;
+  }
+  .dark {
+    --bg: #111827; --card: #1F2937; --text: #FFFFFF; --primary: #10B981; --sub: #9CA3AF;
+  }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+  body { background: var(--bg); color: var(--text); transition: 0.3s; }
+  
+  .header { background: var(--card); padding: 12px; display: flex; align-items: center; position: sticky; top: 0; z-index: 10; }
+  .menu-btn { font-size: 24px; margin-right: 12px; cursor: pointer; }
+  .search { flex: 1; padding: 8px; border-radius: 20px; border: none; background: var(--bg); color: var(--text); }
+  
+  .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--bg); transition: 0.3s; z-index: 30; padding: 20px; }
+  .sidebar.active { left: 0; box-shadow: 2px 0 10px rgba(0,0,0,0.3); }
+  .logo { color: var(--primary); font-size: 22px; font-weight: bold; margin-bottom: 20px; }
+  .nav-item { padding: 12px 0; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .nav-title { color: var(--primary); font-size: 12px; margin: 15px 0 5px 0; }
+  .theme-btn { position: absolute; bottom: 20px; width: calc(100% - 40px); padding: 10px; border: 1px solid var(--primary); background: none; color: var(--primary); border-radius: 20px; }
+  
+  .section { padding: 15px; }
+  .section-title { font-size: 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .card { background: var(--card); border-radius: 12px; overflow: hidden; }
+  .card img { width: 100%; height: 100px; object-fit: cover; }
+  .card-body { padding: 10px; }
+  .tag { background: var(--bg); color: var(--primary); font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+  .ver { float: right; background: var(--bg); color: var(--primary); font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+  .card-title { font-size: 14px; margin: 8px 0 4px 0; }
+  .card-sub { font-size: 12px; color: var(--sub); }
+  .btn { width: 100%; padding: 8px; margin-top: 8px; background: var(--bg); border: 1px solid var(--sub); color: var(--text); border-radius: 8px; cursor: pointer; }
+  .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 15; }
+  .overlay.active { display: block; }
+
+  /* MODAL DETALLES NUEVO */
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 50; align-items: center; justify-content: center; }
+  .modal.active { display: flex; }
+  .modal-content { background: var(--bg); width: 90%; max-width: 400px; border-radius: 16px; position: relative; overflow: hidden; }
+  .close-modal { position: absolute; top: 8px; right: 12px; font-size: 28px; cursor: pointer; color: white; z-index: 2; text-shadow: 0 0 5px black; }
+  .modal-img { width: 100%; height: 180px; object-fit: cover; }
+  .modal-body { padding: 15px; }
+  .modal-title { font-size: 18px; font-weight: bold; text-align: center; }
+  .modal-sub { font-size: 14px; text-align: center; color: var(--sub); margin: 4px 0 8px 0; }
+  .modal-tag { display: block; width: fit-content; margin: 0 auto 12px auto; background: #DCFCE7; color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+  .modal-desc { background: var(--card); padding: 12px; border-radius: 12px; margin: 12px 0; font-size: 14px; line-height: 1.4; }
+  .download-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="menu-btn" onclick="toggleMenu()">☰</div>
+    <input class="search" placeholder="Buscar por nombre o ver">
+  </div>
+
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="logo">⬡ LOKY-CRAFT <span style="float:right;cursor:pointer;" onclick="toggleMenu()">✕</span></div>
+    <div class="nav-item">🏠 Inicio</div>
+    <div class="nav-title">CATEGORÍAS</div>
+    <div class="nav-item">🧩 Addons</div>
+    <div class="nav-item">🗺️ Mapas</div>
+    <div class="nav-item">⚙️ Shaders</div>
+    <div class="nav-item">🎨 Texturas</div>
+    <div class="nav-item">📦 DLC</div>
+    <div class="nav-item">👤 Skins</div>
+    <div class="nav-item">📱 Versiones</div>
+    <button class="theme-btn" onclick="toggleTheme()">🌙 Cambiar Tema</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🟢 Novedades</div>
+    <div class="grid">
+      <div class="card">
+        <img src="https://via.placeholder.com/300x150/3B82F6/FFFFFF?text=Essentials+1.6">
+        <div class="card-body">
+          <span class="tag">ADDONS</span><span class="ver">vV1.6</span>
+          <div class="card-title">Essentials Update...</div>
+          <div class="card-sub">By Loky-Craft-App</div>
+          <button class="btn" onclick="abrirDetalles('ESSENTIALS UPDATE V1.6','ADDON','V1.6','Trae nuevos items útiles y crafteos con Mecánicas QoL: Árboles se talan todo cuando picas un tronco. Nuevos items como: Mochilas, Bolsas de dormir, Martillos que rompen 3x3, ect','https://via.placeholder.com/400x200/3B82F6/FFFFFF?text=Essentials+1.6','https://PON-AQUI-TU-LINK-DE-MEDIAFIRE.com')">DETALLES</button>
+        </div>
+      </div>
+      <div class="card">
+        <img src="https://via.placeholder.com/300x150/EF4444/FFFFFF?text=Fake+Heart">
+        <div class="card-body">
+          <span class="tag">TEXTURAS</span><span class="ver">vV26.0</span>
+          <div class="card-title">Fake Hardcore...</div>
+          <div class="card-sub">By Loky-Craft-App</div>
+          <button class="btn" onclick="abrirDetalles('FAKE HARDCORE V26.0','TEXTURAS','V26.0','Textura que simula modo hardcore con corazones falsos y más detalles.','https://via.placeholder.com/400x200/EF4444/FFFFFF?text=Fake+Heart','https://PON-AQUI-TU-LINK.com')">DETALLES</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔥 Populares</div>
+    <div class="grid">
+      <div class="card">
+        <img src="https://via.placeholder.com/300x150/F59E0B/FFFFFF?text=Actions+1.9.1">
+        <div class="card-body">
+          <span class="tag">TEXTURAS</span><span class="ver">vV1.9.1</span>
+          <div class="card-title">Actions and Stuff...</div>
+          <div class="card-sub">By Loky-Craft-App</div>
+          <button class="btn" onclick="abrirDetalles('ACTIONS AND STUFF V1.9.1','TEXTURAS','V1.9.1','Pack de animaciones nuevas para el jugador, items y mobs.','https://via.placeholder.com/400x200/F59E0B/FFFFFF?text=Actions+1.9.1','https://PON-AQUI-TU-LINK.com')">DETALLES</button>
+        </div>
+      </div>
+      <div class="card">
+        <img src="https://via.placeholder.com/300x150/7C3AED/FFFFFF?text=Bosses+v1.4">
+        <div class="card-body">
+          <span class="tag">ADDONS</span><span class="ver">vV1.4</span>
+          <div class="card-title">Bosses v1.4 Addon</div>
+          <div class="card-sub">By Loky-Craft-App</div>
+          <button class="btn" onclick="abrirDetalles('BOSSES V1.4 ADDON','ADDON','V1.4','Agrega 5 jefes nuevos con mecánicas únicas y loot especial.','https://via.placeholder.com/400x200/7C3AED/FFFFFF?text=Bosses+v1.4','https://PON-AQUI-TU-LINK.com')">DETALLES</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETALLES -->
+  <div class="modal" id="modalDetalles">
+    <div class="modal-content">
+      <span class="close-modal" onclick="cerrarDetalles()">×</span>
+      <img id="modalImg" class="modal-img" src="">
+      <div class="modal-body">
+        <div id="modalTitulo" class="modal-title"></div>
+        <div id="modalSub" class="modal-sub"></div>
+        <div id="modalVersion" class="modal-tag"></div>
+        <div id="modalDesc" class="modal-desc"></div>
+        <button id="modalBtn" class="download-btn">⬇️ DESCARGAR AHORA</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('active');
+    document.getElementById('overlay').classList.toggle('active');
+  }
+  function toggleTheme() {
+    document.body.classList.toggle('dark');
+  }
+  
+  function abrirDetalles(titulo, tipo, version, desc, img, link) {
+    document.getElementById('modalTitulo').innerText = titulo;
+    document.getElementById('modalSub').innerText = tipo;
+    document.getElementById('modalVersion').innerText = 'Versión: ' + version;
+    document.getElementById('modalDesc').innerText = desc;
+    document.getElementById('modalImg').src = img;
+    document.getElementById('modalBtn').onclick = function(){ window.open(link, '_blank'); };
+    document.getElementById('modalDetalles').classList.add('active');
+  }
+  
+  function cerrarDetalles() {
+    document.getElementById('modalDetalles').classList.remove('active');
+  }
+</script>
+</body>
+</html>
